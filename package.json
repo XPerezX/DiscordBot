@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.ts",
     "dev": "tsnd --respawn ./src/index.ts",
-    "deployCommands": "node src/resources/deploy-commands.mjs"
+    "deployCommands": "node src/resources/deploy-commands.mjs",
+    "ytdl": "ts-node-dev src/musicDownloader/index.ts",
+    "scrapper": "ts-node-dev src/scrapper"
   },
   "repository": {
     "type": "git",
@@ -20,11 +22,17 @@
   },
   "homepage": "https://github.com/XPerezX/DiscordBot#readme",
   "dependencies": {
+    "@discordjs/opus": "^0.6.0",
     "@discordjs/rest": "^0.1.0-canary.0",
+    "@discordjs/voice": "^0.6.0",
     "discord-api-types": "^0.23.1",
     "discord.js": "^13.1.0",
     "dotenv": "^10.0.0",
-    "ts-node-dev": "^1.1.8"
+    "ffmpeg": "^0.0.4",
+    "fluent-ffmpeg": "^2.1.2",
+    "puppeteer": "^10.4.0",
+    "ts-node-dev": "^1.1.8",
+    "ytdl-core": "^4.9.1"
   },
   "devDependencies": {
     "typescript": "^4.4.3"

@@ -17,6 +17,14 @@ client.on("interactionCreate", async interaction => {
 	if (commandName === "p") {
 		await interaction.reply("Musica selecionada");
 		console.log(interaction.options.getString("link"));
+		console.log(interaction.options.getChannel("channel"))
+		const channel = interaction.options.getChannel("channel");
+
+		if(!channel) {
+			await interaction.reply("deu erro")
+			return;
+		}
+
 	} else if (commandName === 'server') {
         if (!interaction.guild) return;
         await interaction.reply(`Server name: ${interaction.guild.name}\nTotal members: ${interaction.guild.memberCount}`);

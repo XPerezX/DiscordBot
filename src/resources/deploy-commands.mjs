@@ -7,7 +7,7 @@ dotenv.config();
 
 const commands = [
 	new SlashCommandBuilder().setName("p").setDescription("toPlay").addStringOption(
-		options => options.setName("link").setDescription("the Link")),
+		options => options.setName("link").setDescription("the Link")).addChannelOption(options => options.setName("channel").setDescription("channel info")),
 	new SlashCommandBuilder().setName('server').setDescription('Replies with server info!'),
 ]
 	.map(command => command.toJSON());
