@@ -1,0 +1,31 @@
+{
+  "name": "discordbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.ts",
+    "dev": "tsnd --respawn ./src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/XPerezX/DiscordBot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/XPerezX/DiscordBot/issues"
+  },
+  "homepage": "https://github.com/XPerezX/DiscordBot#readme",
+  "dependencies": {
+    "@discordjs/rest": "^0.1.0-canary.0",
+    "discord-api-types": "^0.23.1",
+    "discord.js": "^13.1.0",
+    "dotenv": "^10.0.0",
+    "ts-node-dev": "^1.1.8"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.3"
+  }
+}
