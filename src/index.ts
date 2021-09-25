@@ -3,16 +3,14 @@ import { Client, Intents } from "discord.js";
 
 dotenv.config();
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.DIRECT_MESSAGES] });
+const client = new Client({ });
 
 client.once("ready", () => {
     console.log("Mãe ta on");
 });
 
-client.on("interactionCreate", async interaction => {
+client.on("message", async interaction => {
 	if (!interaction.isCommand()) return;
-
-	const { commandName } = interaction;
 
 	if (commandName === "p") {
 		await interaction.reply("Musica selecionada");
