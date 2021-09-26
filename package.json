@@ -8,7 +8,7 @@
     "start": "node index.ts",
     "dev": "tsnd --respawn ./src/index.ts",
     "deployCommands": "node src/resources/deploy-commands.mjs",
-    "ytdl": "ts-node-dev src/musicDownloader/index.ts",
+    "ytdl": "ts-node-dev src/music/index.ts",
     "scrapper": "ts-node-dev src/scrapper"
   },
   "repository": {
@@ -30,7 +30,10 @@
     "discord.js": "^13.1.0",
     "dotenv": "^10.0.0",
     "ffmpeg": "^0.0.4",
+    "ffmpeg-static": "^4.4.0",
     "fluent-ffmpeg": "^2.1.2",
+    "libsodium-wrappers": "^0.7.9",
+    "play-dl": "^1.0.3",
     "puppeteer": "^10.4.0",
     "ts-node-dev": "^1.1.8",
     "ytdl-core": "^4.9.1"
