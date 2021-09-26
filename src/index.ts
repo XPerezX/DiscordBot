@@ -1,5 +1,7 @@
 import dotenv from "dotenv";
-import { Client, Intents } from "discord.js";
+import { Client, Constants, Intents, Snowflake } from "discord.js";
+import { joinVoiceChannel, createAudioPlayer, createAudioResource } from "@discordjs/voice";
+import { convertMusic } from "./musicDownloader";
 
 dotenv.config();
 
@@ -15,15 +17,30 @@ client.on("interactionCreate", async interaction => {
 	const { commandName } = interaction;
 
 	if (commandName === "p") {
+
 		await interaction.reply("Musica selecionada");
 		console.log(interaction.options.getString("link"));
 		console.log(interaction.options.getChannel("channel"))
-		const channel = interaction.options.getChannel("channel");
+		const interactionUserChannel = interaction.guild?.members.cache.find((user) => user.id === interaction.user.id)?.voice.channel
 
-		if(!channel) {
-			await interaction.reply("deu erro")
+		if(!interactionUserChannel) {
+			await interaction.reply("Não foi possivel entrar no canal")
 			return;
 		}
+		console.log();
+
+		const voiceConnection = joinVoiceChannel({
+			guildId: interactionUserChannel.guildId,
+			channelId: interactionUserChannel.id,
+			adapterCreator: interactionUserChannel.guild.voiceAdapterCreator,
+		})
+
+		const resource = createAudioResource(convertMusic());
+		const player = createAudioPlayer();
+		player.play(resource);
+
+
+		voiceConnection.subscribe(player)
 
 	} else if (commandName === 'server') {
         if (!interaction.guild) return;
