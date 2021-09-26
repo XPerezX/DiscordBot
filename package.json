@@ -34,9 +34,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "libsodium-wrappers": "^0.7.9",
     "play-dl": "^1.0.3",
-    "puppeteer": "^10.4.0",
-    "ts-node-dev": "^1.1.8",
-    "ytdl-core": "^4.9.1"
+    "ts-node-dev": "^1.1.8"
   },
   "devDependencies": {
     "typescript": "^4.4.3"
