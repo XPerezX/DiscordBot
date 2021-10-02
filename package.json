@@ -8,9 +8,7 @@
     "start": "node dist/index.js",
     "build": "rimraf dist && tsc",
     "dev": "tsnd --respawn ./src/index.ts",
-    "deployCommands": "node src/resources/deploy-commands.mjs",
-    "ytdl": "ts-node-dev src/music/index.ts",
-    "scrapper": "ts-node-dev src/scrapper"
+    "deployCommands": "node src/resources/deploy-commands.mjs"
   },
   "repository": {
     "type": "git",
