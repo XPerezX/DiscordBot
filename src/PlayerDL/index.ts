@@ -11,7 +11,6 @@ import {
     VoiceConnection,
     AudioPlayerStatus,
     getVoiceConnection,
-    getVoiceConnections,
     VoiceConnectionStatus,
 } from "@discordjs/voice";
 import * as types from "./type";
@@ -53,7 +52,6 @@ export default class PlayerDL {
 
     public getCurrentVoiceConnection = () => {
         const connection = getVoiceConnection(process.env.GUILDID!);
-        // console.log(connection);
         return connection;
     };
 
@@ -134,10 +132,8 @@ export default class PlayerDL {
             this.stopPlayer();
         })
 
-        /* this.player.on(AudioPlayerStatus.Idle, () => {
-            console.log("TIME OUT Try1");
+        this.player.on(AudioPlayerStatus.Idle, () => {
             setTimeout(() => {
-                console.log("TIME OUT Try2");
                 if (!this.queue.length) {
                     console.log("TIME OUT RELEASE");
                     playConnection?.unsubscribe();
@@ -145,8 +141,8 @@ export default class PlayerDL {
                     connection.destroy()
                     this.stopPlayer();
                 }
-            }, 6000);
-        }); */
+            }, 120000);
+        });
 
         this.nextSong();
     }
