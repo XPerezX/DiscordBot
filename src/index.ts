@@ -49,6 +49,14 @@ client.on("interactionCreate", async interaction => {
 		
 		voiceConnection.subscribe(player);
 		player.play(resource); */
+	} else if (commandName === "queue") {
+        if (!interaction.guild) return;
+		if(!playerDl.queue.length) {
+			return await interaction.reply("não a nada na fila");
+		}
+		const c = playerDl.queue.map((item, index) => `${index + 1}º ${item.title ? item.title: "No named"}`)
+
+       await interaction.reply(c.join(" "));
 	}
 });
 
