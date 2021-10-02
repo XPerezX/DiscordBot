@@ -90,14 +90,13 @@ export default class PlayerDL {
 
     public playCommand = async (interaction: CommandInteraction, userVoiceChannel: types.TInteractChannel) => {
 
-        const search = interaction.options.getString("search");
-
         try {
-            const currentSearch = this.verifiedSearch(search);
+            const currentSearch = this.verifiedSearch(interaction.options.getString("search"));
             const connection = this.joinUserVoiceChannel(userVoiceChannel);
             await this.findSong(currentSearch);
             
             await interaction.reply("Musica adicionada");
+
             if (connection) {
                 this.startPlaying(connection)
             }
@@ -129,7 +128,7 @@ export default class PlayerDL {
 
     public nextSong = async () => {
         if (!this.queue.length) {
-            throw new Error("Não há musica para ser tocada");
+            return;
         }
 
         const resource = await this.getNextResource(this.queue[0]);
@@ -138,7 +137,7 @@ export default class PlayerDL {
 
     public skipCommand =  () => {
         if (!this.queue.length) {
-            throw new Error("Não há musica para ser tocada");
+            return;
         }
         this.queue.shift();
         this.nextSong()

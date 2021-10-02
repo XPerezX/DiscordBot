@@ -1,7 +1,5 @@
 import dotenv from "dotenv";
 import { Client, Intents, } from "discord.js";
-import { joinVoiceChannel, createAudioPlayer, createAudioResource, NoSubscriberBehavior } from "@discordjs/voice";
-import * as playdl from 'play-dl'
 import PlayerDL from "./PlayerDL"
 
 dotenv.config();
@@ -22,33 +20,9 @@ client.on("interactionCreate", async interaction => {
 	if (commandName === "p") {
 
 		const interactionUserChannel = interaction.guild?.members.cache.find((user) => user.id === interaction.user.id)?.voice.channel;
-		/* const ytbUrl = interaction.options.getString("search");
-
-			if(!interactionUserChannel || !ytbUrl) {
-			await interaction.reply("Arthur é corno");
-			return;
-		} */
 
 		playerDl.playCommand(interaction, interactionUserChannel);
 
-		/* const voiceConnection = joinVoiceChannel({
-			guildId: interactionUserChannel.guildId,
-			channelId: interactionUserChannel.id,
-			adapterCreator: interactionUserChannel.guild.voiceAdapterCreator,
-			selfDeaf: false,
-		})
-
-		let stream = await playdl.stream(ytbUrl);
-
-        const resource = createAudioResource(stream.stream, { inputType: stream.type });
-		let player = createAudioPlayer({
-            behaviors: {
-                noSubscriber: NoSubscriberBehavior.Play
-            }
-        });
-		
-		voiceConnection.subscribe(player);
-		player.play(resource); */
 	} else if (commandName === "queue") {
         if (!interaction.guild) return;
 		if(!playerDl.queue.length) {
@@ -57,6 +31,9 @@ client.on("interactionCreate", async interaction => {
 		const c = playerDl.queue.map((item, index) => `${index + 1}º ${item.title ? item.title: "No named"}`)
 
        await interaction.reply(c.join(" "));
+	} else if (commandName === "s") {
+        playerDl.skipCommand();
+		await interaction.reply("Musica pulada");
 	}
 });
 
