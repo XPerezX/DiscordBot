@@ -11,7 +11,7 @@ import {
     VoiceConnection,
     AudioPlayerStatus,
     getVoiceConnection,
-    getVoiceConnections,
+    VoiceConnectionStatus,
 } from "@discordjs/voice";
 import * as types from "./type";
 
@@ -27,10 +27,7 @@ export default class PlayerDL {
     });
 
     constructor() {
-        /* this.player.on("stateChange", (_, newSate) => {
-            console.log("proving the event can work here", newSate);
-        }) */
-        this.player.on(AudioPlayerStatus.Idle, async () => {
+        this.player.on(AudioPlayerStatus.Idle, () => {
             this.skipCommand();
         });
     }
@@ -44,18 +41,17 @@ export default class PlayerDL {
         if (this.getCurrentVoiceConnection()) {
             return;
         }
-
-        return joinVoiceChannel({
+       const connection =  joinVoiceChannel({
 			guildId: userVoiceChannel.guildId,
 			channelId: userVoiceChannel.id,
 			adapterCreator: userVoiceChannel.guild.voiceAdapterCreator,
 			selfDeaf: false,
 		});
+        return connection;
     }
 
     public getCurrentVoiceConnection = () => {
         const connection = getVoiceConnection(process.env.GUILDID!);
-        console.log(connection);
         return connection;
     };
 
@@ -100,6 +96,10 @@ export default class PlayerDL {
             if (connection) {
                 this.startPlaying(connection)
             }
+
+            if (!connection && this.player.state.status === AudioPlayerStatus.Idle && this.queue.length > 0) {
+                this.nextSong();
+            }
         } catch(error) {
             console.log("custom Error", error);
             if (typeof error === "string") {
@@ -122,12 +122,34 @@ export default class PlayerDL {
 
 
     public startPlaying = async (connection: VoiceConnection) => {
-        connection.subscribe(this.player);
+        const playConnection = connection.subscribe(this.player);
+
+        connection.on(VoiceConnectionStatus.Disconnected, () => {
+            console.log("matando tudo");
+            playConnection?.unsubscribe();
+            this.clearQueue();
+            connection.destroy()
+            this.stopPlayer();
+        })
+
+        this.player.on(AudioPlayerStatus.Idle, () => {
+            setTimeout(() => {
+                if (!this.queue.length) {
+                    console.log("TIME OUT RELEASE");
+                    playConnection?.unsubscribe();
+                    this.clearQueue();
+                    connection.destroy()
+                    this.stopPlayer();
+                }
+            }, 120000);
+        });
+
         this.nextSong();
     }
 
     public nextSong = async () => {
         if (!this.queue.length) {
+            this.stopPlayer();
             return;
         }
 
@@ -141,6 +163,14 @@ export default class PlayerDL {
         }
         this.queue.shift();
         this.nextSong()
+        
     }
 
+    private clearQueue = () => {
+        this.queue = [];
+    }
+
+    private stopPlayer = () => {
+        this.player.stop();
+    }
 };
