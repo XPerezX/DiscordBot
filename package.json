@@ -10,9 +10,7 @@
     "dev": "tsnd --respawn ./src/index.ts",
     "deployCommands": "node src/resources/deploy-commands.mjs"
   },
-  "engines": {
-    "node": "16.7.0"
-  },
+
   "repository": {
     "type": "git",
     "url": "git+https://github.com/XPerezX/DiscordBot.git"

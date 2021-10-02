@@ -12,6 +12,7 @@ import {
     AudioPlayerStatus,
     getVoiceConnection,
     getVoiceConnections,
+    VoiceConnectionStatus,
 } from "@discordjs/voice";
 import * as types from "./type";
 
@@ -27,12 +28,12 @@ export default class PlayerDL {
     });
 
     constructor() {
-        /* this.player.on("stateChange", (_, newSate) => {
-            console.log("proving the event can work here", newSate);
-        }) */
         this.player.on(AudioPlayerStatus.Idle, async () => {
             this.skipCommand();
         });
+
+        // this.currentVoiceConnection?.on("stateChange", (old, newv) => console.log("i'm proving that i worked",newv) )
+    
     }
 
     public joinUserVoiceChannel = (userVoiceChannel: types.TInteractChannel) => {
@@ -44,18 +45,18 @@ export default class PlayerDL {
         if (this.getCurrentVoiceConnection()) {
             return;
         }
-
-        return joinVoiceChannel({
+       const connection =  joinVoiceChannel({
 			guildId: userVoiceChannel.guildId,
 			channelId: userVoiceChannel.id,
 			adapterCreator: userVoiceChannel.guild.voiceAdapterCreator,
 			selfDeaf: false,
 		});
+        return connection;
     }
 
     public getCurrentVoiceConnection = () => {
         const connection = getVoiceConnection(process.env.GUILDID!);
-        console.log(connection);
+        // console.log(connection);
         return connection;
     };
 
@@ -122,12 +123,22 @@ export default class PlayerDL {
 
 
     public startPlaying = async (connection: VoiceConnection) => {
-        connection.subscribe(this.player);
+        const playConnection = connection.subscribe(this.player);
+
+        connection.on(VoiceConnectionStatus.Disconnected, () => {
+            console.log("matando tudo");
+            playConnection?.unsubscribe();
+            this.clearQueue();
+            connection.destroy()
+            this.stopPlayer();
+        })
+
         this.nextSong();
     }
 
     public nextSong = async () => {
         if (!this.queue.length) {
+            this.stopPlayer();
             return;
         }
 
@@ -141,6 +152,14 @@ export default class PlayerDL {
         }
         this.queue.shift();
         this.nextSong()
+        
     }
 
+    private clearQueue = () => {
+        this.queue = [];
+    }
+
+    private stopPlayer = () => {
+        this.player.stop();
+    }
 };
