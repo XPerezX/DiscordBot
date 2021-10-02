@@ -28,9 +28,12 @@ client.on("interactionCreate", async interaction => {
 		if(!playerDl.queue.length) {
 			return await interaction.reply("não a nada na fila");
 		}
-		const c = playerDl.queue.map((item, index) => `${index + 1}º ${item.title ? item.title: "No named"}`)
 
-       await interaction.reply(c.join(" "));
+		const title = "Lista:"
+		const playList = playerDl.queue.map((item, index) => `${index + 1}º ${item.title ? item.title: "No named"}`)
+		playList.unshift(title);
+       await interaction.reply(playList.join("\n"));
+
 	} else if (commandName === "s") {
         playerDl.skipCommand();
 		await interaction.reply("Musica pulada");
