@@ -1,11 +1,12 @@
 import dotenv from "dotenv";
-import { Client, Intents } from "discord.js";
-import { joinVoiceChannel, createAudioPlayer, createAudioResource, NoSubscriberBehavior } from "@discordjs/voice";
-import * as playdl from 'play-dl'
+import { Client, Intents, } from "discord.js";
+import PlayerDL from "./PlayerDL"
 
 dotenv.config();
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES] });
+
+const playerDl = new PlayerDL();
 
 client.once("ready", () => {
     console.log("Mãe ta on");
@@ -18,38 +19,24 @@ client.on("interactionCreate", async interaction => {
 
 	if (commandName === "p") {
 
-		await interaction.reply("Musica selecionada");
 		const interactionUserChannel = interaction.guild?.members.cache.find((user) => user.id === interaction.user.id)?.voice.channel;
-		const ytbUrl = interaction.options.getString("link");
 
-		if(!interactionUserChannel || !ytbUrl) {
-			await interaction.reply("Não foi possivel entrar no canal")
-			return;
+		playerDl.playCommand(interaction, interactionUserChannel);
+
+	} else if (commandName === "queue") {
+        if (!interaction.guild) return;
+		if(!playerDl.queue.length) {
+			return await interaction.reply("não a nada na fila");
 		}
 
-		const voiceConnection = joinVoiceChannel({
-			guildId: interactionUserChannel.guildId,
-			channelId: interactionUserChannel.id,
-			adapterCreator: interactionUserChannel.guild.voiceAdapterCreator,
-			selfDeaf: false,
-		})
+		const title = "Lista:"
+		const playList = playerDl.queue.map((item, index) => `${index + 1}º ${item.title ? item.title: "No named"}`)
+		playList.unshift(title);
+       await interaction.reply(playList.join("\n"));
 
-		let stream = await playdl.stream(ytbUrl);
-
-        const resource = createAudioResource(stream.stream, { inputType: stream.type });
-		let player = createAudioPlayer({
-            behaviors: {
-                noSubscriber: NoSubscriberBehavior.Play
-            }
-        });
-		
-		voiceConnection.subscribe(player);
-		player.play(resource);
-		
-	} else if (commandName === 'server') {
-        if (!interaction.guild) return;
-        await interaction.reply(`Server name: ${interaction.guild.name}\nTotal members: ${interaction.guild.memberCount}`);
-
+	} else if (commandName === "s") {
+        playerDl.skipCommand();
+		await interaction.reply("Musica pulada");
 	}
 });
 

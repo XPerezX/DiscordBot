@@ -6,8 +6,9 @@ import { Routes } from "discord-api-types/v9";
 dotenv.config();
 
 const commands = [
-	new SlashCommandBuilder().setName("p").setDescription("toPlay").addStringOption(options => options.setName("play link").setDescription("ytb href to play songs")),
-	new SlashCommandBuilder().setName('server').setDescription('Replies with server info!'),
+	new SlashCommandBuilder().setName("p").setDescription("search and play song").addStringOption(options => options.setName("search").setDescription("text or url to play")),
+	new SlashCommandBuilder().setName("s").setDescription("skip the current song"),
+	new SlashCommandBuilder().setName("queue").setDescription("show the queue"),
 ]
 	.map(command => command.toJSON());
 
