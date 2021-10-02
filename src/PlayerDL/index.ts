@@ -28,12 +28,9 @@ export default class PlayerDL {
     });
 
     constructor() {
-        this.player.on(AudioPlayerStatus.Idle, async () => {
+        this.player.on(AudioPlayerStatus.Idle, () => {
             this.skipCommand();
         });
-
-        // this.currentVoiceConnection?.on("stateChange", (old, newv) => console.log("i'm proving that i worked",newv) )
-    
     }
 
     public joinUserVoiceChannel = (userVoiceChannel: types.TInteractChannel) => {
@@ -101,6 +98,10 @@ export default class PlayerDL {
             if (connection) {
                 this.startPlaying(connection)
             }
+
+            if (!connection && this.player.state.status === AudioPlayerStatus.Idle && this.queue.length > 0) {
+                this.nextSong();
+            }
         } catch(error) {
             console.log("custom Error", error);
             if (typeof error === "string") {
@@ -132,6 +133,20 @@ export default class PlayerDL {
             connection.destroy()
             this.stopPlayer();
         })
+
+        /* this.player.on(AudioPlayerStatus.Idle, () => {
+            console.log("TIME OUT Try1");
+            setTimeout(() => {
+                console.log("TIME OUT Try2");
+                if (!this.queue.length) {
+                    console.log("TIME OUT RELEASE");
+                    playConnection?.unsubscribe();
+                    this.clearQueue();
+                    connection.destroy()
+                    this.stopPlayer();
+                }
+            }, 6000);
+        }); */
 
         this.nextSong();
     }
