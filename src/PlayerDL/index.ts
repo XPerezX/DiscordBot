@@ -41,9 +41,9 @@ export default class PlayerDL {
             throw new Error("Você não está em nenhuma sala");
         }
 
-        /* if (this.getCurrentVoiceConnection()) {
-            throw new Error("Já estou tocando em uma sala");
-        } */
+        if (this.getCurrentVoiceConnection()) {
+            return;
+        }
 
         return joinVoiceChannel({
 			guildId: userVoiceChannel.guildId,
@@ -98,7 +98,9 @@ export default class PlayerDL {
             await this.findSong(currentSearch);
             
             await interaction.reply("Musica adicionada");
-            this.startPlaying(connection)
+            if (connection) {
+                this.startPlaying(connection)
+            }
         } catch(error) {
             console.log("custom Error", error);
             if (typeof error === "string") {
@@ -121,7 +123,7 @@ export default class PlayerDL {
 
 
     public startPlaying = async (connection: VoiceConnection) => {
-        const subscription = connection.subscribe(this.player);
+        connection.subscribe(this.player);
         this.nextSong();
     }
 
