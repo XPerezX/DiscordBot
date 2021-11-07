@@ -1,5 +1,4 @@
 import * as playdlLib from "play-dl";
-import { Stream } from "play-dl/dist/SoundCloud/classes";
 
 import { CommandInteraction } from "discord.js";
 
@@ -13,17 +12,19 @@ import {
     getVoiceConnection,
     VoiceConnectionStatus,
 } from "@discordjs/voice";
-import * as types from "./type";
 
-export default class PlayerDL {
+import * as types from "../../resources/types";
+import strings from "../../resources/strings";
+import Queue from "../Queue";
 
-    public queue: Array<types.IQueue> = [];
+export default class Player {
+
+    public queueHandler = new Queue();
 
     public player = createAudioPlayer({
         behaviors: {
             noSubscriber: NoSubscriberBehavior.Play
         }
-        
     });
 
     constructor() {
@@ -32,10 +33,10 @@ export default class PlayerDL {
         });
     }
 
-    public joinUserVoiceChannel = (userVoiceChannel: types.TInteractChannel) => {
+    public joinUserVoiceChannel = (userVoiceChannel?: types.TInteractChannel) => {
 
         if (!userVoiceChannel) {
-            throw new Error("Você não está em nenhuma sala");
+            throw new Error(strings.errors.alreadyInAVoiceChannel);
         }
 
         if (this.getCurrentVoiceConnection()) {
@@ -55,31 +56,9 @@ export default class PlayerDL {
         return connection;
     };
 
-    private findSong = async (search: string) => {
-        try {
-            const playObject = await playdlLib.search(search, { limit: 1, source: { youtube: "video" }}) as types.IYoutubeVideo[];
-
-            if (!playObject || !playObject[0].url) {
-                throw new Error("Não foi possivel encontrar")
-            }
-            const currentVideo = playObject[0];
-            this.addSongOnQueue(currentVideo);
-        } catch(error) {
-            console.error(error);
-        }
-    }
-
-    private addSongOnQueue =(video: types.IYoutubeVideo) => {
-        this.queue.push({
-            url: video.url,
-            durationRaw: video.durationRaw || null,
-            title: video.title || null,
-        });
-    }
-
     public verifiedSearch = (search: string | null): string => {
         if (!search) {
-            throw new Error("Digite o nome da musica ou Url");
+            throw new Error(strings.errors.nothingToSearch);
         }
         return search;
     }
@@ -89,24 +68,26 @@ export default class PlayerDL {
         try {
             const currentSearch = this.verifiedSearch(interaction.options.getString("search"));
             const connection = this.joinUserVoiceChannel(userVoiceChannel);
-            await this.findSong(currentSearch);
+            await this.queueHandler.findSong(currentSearch);
             
-            await interaction.reply("Musica adicionada");
+            await interaction.reply(strings.success.songWasAddedIntoPlayList);
 
             if (connection) {
                 this.startPlaying(connection)
             }
 
-            if (!connection && this.player.state.status === AudioPlayerStatus.Idle && this.queue.length > 0) {
+            if (
+                !connection && this.player.state.status === AudioPlayerStatus.Idle
+                && this.queueHandler.list.length > 0) {
                 this.nextSong();
             }
-        } catch(error) {
-            console.log("custom Error", error);
-            if (typeof error === "string") {
-                await interaction.reply(error);
+        } catch(e) {
+            const error = e as Error;
+            if (error.message) {
+                await interaction.reply(error.message);
                 return;
             }
-            await interaction.reply("Ocorreu um erro");
+            await interaction.reply(strings.errors.theresAError);
         }
     }
 
@@ -115,29 +96,26 @@ export default class PlayerDL {
         const resource = createAudioResource(stream.stream, { inputType: stream!.type });
 
         if (!resource) {
-            throw new Error("dwadwa");
+            throw new Error(strings.errors.theresAError);
         }
         return resource;
     }
-
 
     public startPlaying = async (connection: VoiceConnection) => {
         const playConnection = connection.subscribe(this.player);
 
         connection.on(VoiceConnectionStatus.Disconnected, () => {
-            console.log("matando tudo");
             playConnection?.unsubscribe();
-            this.clearQueue();
+            this.queueHandler.clear();
             connection.destroy()
             this.stopPlayer();
         })
 
         this.player.on(AudioPlayerStatus.Idle, () => {
             setTimeout(() => {
-                if (!this.queue.length) {
-                    console.log("TIME OUT RELEASE");
+                if (!this.queueHandler.list.length) {
                     playConnection?.unsubscribe();
-                    this.clearQueue();
+                    this.queueHandler.clear();
                     connection.destroy()
                     this.stopPlayer();
                 }
@@ -148,26 +126,21 @@ export default class PlayerDL {
     }
 
     public nextSong = async () => {
-        if (!this.queue.length) {
+        if (!this.queueHandler.list.length) {
             this.stopPlayer();
             return;
         }
 
-        const resource = await this.getNextResource(this.queue[0]);
+        const resource = await this.getNextResource(this.queueHandler.getFirstOnQueue());
         this.player.play(resource);
     }
 
     public skipCommand =  () => {
-        if (!this.queue.length) {
+        if (!this.queueHandler.list.length) {
             return;
         }
-        this.queue.shift();
-        this.nextSong()
-        
-    }
-
-    private clearQueue = () => {
-        this.queue = [];
+        this.queueHandler.skip();
+        this.nextSong() 
     }
 
     private stopPlayer = () => {
