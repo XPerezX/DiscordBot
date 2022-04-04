@@ -8,9 +8,8 @@ dotenv.config();
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES] });
 
-
 client.once("ready", () => {
-    console.log("Mãe ta on");
+    console.log("I'm Online");
 });
 
 client.on("interactionCreate", async interaction => {
