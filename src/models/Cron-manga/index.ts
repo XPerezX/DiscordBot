@@ -14,6 +14,7 @@ const task = cron.schedule("*/30 * * * *", async () => {
 		await mangaService.handleMangaFetch();
 
 		await discordService.sendEmbends();
+		console.log("it has fetched cron job: ", discordService.embeds);
 	} catch (error) {
 		console.log(strings.errors.console.cronError, error);
 	}
