@@ -17,15 +17,3 @@ export interface IYoutubeVideo {
 	durationInSec: number;
 	views: number;
 }
-
-export interface IManga {
-	id: string;
-	name: string;
-	nameother: string;
-	image: string;
-	author: string;
-	genres: string;
-	updatetime: string;
-	view: string;
-	description: string;
-}
