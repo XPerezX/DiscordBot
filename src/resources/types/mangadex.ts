@@ -68,7 +68,7 @@ export interface IMangadexChapter {
         volume?: boolean | string;
         chapter: string;
         title: string | null;
-        translatedLanguage: "en" | "pt-br";
+        translatedLanguage: "en" | "pt-br" | "ja";
         externalUrl: null | string;
         publishAt: Date;
         readableAt: Date;
@@ -83,6 +83,17 @@ export interface IMangadexChapter {
             type: IChapterRelationType;
         }
     >;
+}
+
+export interface ISimplifiedManga {
+    title: string;
+    image: string;
+    description: string;
+}
+
+export interface UpdatedMangaList {
+    id: string;
+    latestChapter: string;
 }
 
 interface IMangadexScan {
