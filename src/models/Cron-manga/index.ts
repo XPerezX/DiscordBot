@@ -5,8 +5,7 @@ import { discordService } from "../../resources/globalData";
 
 const mangaService = new MangaService(discordService);
 
-const task = cron.schedule("5 * * * * *", async () => {
-	console.log("to funcionando");
+const task = cron.schedule("*/30 * * * *", async () => {
 	try {
 		if (!mangaService.mangaList.length) {
 			await mangaService.getList();

@@ -130,6 +130,7 @@ export default class MangaService {
 
 		this.updatedMangaList.push({ id: mangaId, latestChapter });
 	}
+
 	public clearAll = () => {
 		this.mangaList = [];
 		this.updatedMangaList = [];
