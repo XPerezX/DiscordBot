@@ -8,8 +8,8 @@ const mangaService = new MangaService(discordService);
 const task = cron.schedule("*/30 * * * *", async () => {
 	try {
 		if (!mangaService.mangaList.length) {
-			await mangaService.getList();
-			return;
+			const list = await mangaService.getList();
+			console.log("list fetch: ", list);
 		}
 		await mangaService.handleMangaFetch();
 
