@@ -4,6 +4,7 @@ import MangaService from "../../services/MangaService";
 import { discordService } from "../../resources/globalData";
 
 const mangaService = new MangaService(discordService);
+console.log("Cron is working");
 
 const task = cron.schedule("*/30 * * * *", async () => {
 	try {
