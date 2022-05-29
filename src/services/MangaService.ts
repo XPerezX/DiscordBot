@@ -61,7 +61,7 @@ export default class MangaService {
 		currentDate.setMinutes(0);
 		currentDate.setSeconds(0);
 
-		return (new Date(chapter.attributes.publishAt) > currentDate);
+		return (new Date(chapter.attributes.readableAt) > currentDate);
 	}
 
 	private checkIfItIsANewChapter = (chapter: types.IMangadexChapter): boolean => {
@@ -132,7 +132,7 @@ export default class MangaService {
 			title: simplifiedManga.title,
 			url: strings.services.manga.mangaUrl(simplifiedManga.id),
 			description: this.creatingChapterDecription(chapters),
-			timestamp: chapters[0].attributes.publishAt,
+			timestamp: chapters[0].attributes.readableAt,
 		});
 	};
 
