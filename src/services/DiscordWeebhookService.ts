@@ -22,7 +22,7 @@ export default class DiscordWeebhookService {
 		try {
 			await axios.post<types.IDiscordPostMessage>(process.env.DISCORDWEBHOOKPOST!,
 				{
-					avatar_url: "https://i.pinimg.com/564x/57/67/f4/5767f44e38f2cc00536f323e78fe7b7c.jpg",
+					avatar_url: "https://i.pinimg.com/564x/ff/bd/79/ffbd79ff7a514052fc4050570f76332e.jpg",
 					embeds: this.embeds,
 				}
 			)
