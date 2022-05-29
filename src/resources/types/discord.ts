@@ -2,6 +2,7 @@ export interface IEmbed {
 	title?: string;
 	color?: string;
 	description?: string;
+	url?: string;
 	thumbnail?: {
 		url: string;
 		width?: number;

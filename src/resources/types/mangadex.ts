@@ -61,6 +61,11 @@ interface IMangadexCoverArt {
 
 type IChapterRelationType = "manga" | "user" | "scanlation_group";
 
+export interface MangaRelationBase {
+    id: string;
+    type: IChapterRelationType;
+};
+
 export interface IMangadexChapter {
     id: string;
     type: "chapter";
@@ -86,6 +91,7 @@ export interface IMangadexChapter {
 }
 
 export interface ISimplifiedManga {
+    id: string;
     title: string;
     image: string;
     description: string;

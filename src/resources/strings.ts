@@ -22,6 +22,7 @@ const strings = {
 	},
 	services: {
 		manga: {
+			mangaUrl: (mangaId: string) => `https://mangadex.org/title/${mangaId}`,
 			mangaImage: (mangaId: string, cover_art_fileName: string) => `https://uploads.mangadex.org/covers/${mangaId}/${cover_art_fileName}`,
 			chapterLink: (chapter: string, chapterId: string, title?: string) => `**[${chapter} ${title ? "- " + title : ""}](https://mangadex.org/chapter/${chapterId}/1)**`,
 		},
