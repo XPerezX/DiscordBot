@@ -74,7 +74,7 @@ export default class MangaService {
 		if (updatedMangaData) {
 			const isHigherThanTheLastUpdated = Number(chapter.attributes.chapter) > Number(updatedMangaData.latestChapter);
 
-			return isPublishedToday || isHigherThanTheLastUpdated;
+			return isHigherThanTheLastUpdated;
 		}
 
 		return isPublishedToday;
