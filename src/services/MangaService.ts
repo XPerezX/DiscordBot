@@ -36,6 +36,7 @@ export default class MangaService {
 	}
 
 	private getSimplifiedManga = async (id: string): Promise<types.ISimplifiedManga> => {
+		console.log("starting manga fetching", new Date());
 
 		const axiosResponse = await this.api.get<types.IMangadexResponse<types.IMangadexManga>>(`https://api.mangadex.org/manga/${id}?&includes[]=cover_art`);
 
@@ -47,6 +48,7 @@ export default class MangaService {
 		const description = manga.attributes.description["en"] || manga.attributes.description["pt-br"] || manga.attributes.description["ja"] || ""
 
 		return {
+			id: manga.id,
 			title,
 			description,
 			image: strings.services.manga.mangaImage(id, cover_art.attributes.fileName),
@@ -59,25 +61,27 @@ export default class MangaService {
 		currentDate.setMinutes(0);
 		currentDate.setSeconds(0);
 
-		return (new Date(chapter.attributes.publishAt) > currentDate);
+		return (new Date(chapter.attributes.readableAt) > currentDate);
 	}
 
-	private checkIfANewChapter = (chapter: types.IMangadexChapter, mangaId: string): boolean => {
+	private checkIfItIsANewChapter = (chapter: types.IMangadexChapter): boolean => {
 		const isPublishedToday = this.checkIfIsPublishedToday(chapter);
+
+		const mangaId = this.findMangaIdFromChapter(chapter);
 
 		const updatedMangaData = this.findMangaInUpdatedMangaList(mangaId);
 
 		if (updatedMangaData) {
 			const isHigherThanTheLastUpdated = Number(chapter.attributes.chapter) > Number(updatedMangaData.latestChapter);
 
-			return isPublishedToday && isHigherThanTheLastUpdated;
+			return isPublishedToday || isHigherThanTheLastUpdated;
 		}
 
 		return isPublishedToday;
 	}
 
-	private findMangaInUpdatedMangaList = (id: string): types.UpdatedMangaList | undefined => {
-		return this.updatedMangaList.find((item) => item.id === id);
+	private findMangaInUpdatedMangaList = (id: string | null): types.UpdatedMangaList | null => {
+		return this.updatedMangaList.find((item) => item.id === id) || null;
 	}
 
 	private creatingChapterDecription = (chapters: types.IMangadexChapter[]): string => {
@@ -86,7 +90,7 @@ export default class MangaService {
 		return chapterAndLinks.join("\n")
 	}
 
-	public handleMangaFetch = async () => {
+	public fetchAndVerifyIfMangaIsNew = async () => {
 		if (!this.mangaList.length) {
 			console.log("[EMPTY]: No items in list");
 			return;
@@ -94,7 +98,7 @@ export default class MangaService {
 		const currentMangaId = this.mangaList[0];
 		const latestChapters = await this.getLatestChapters(currentMangaId);
 
-		const filterNewChapters = latestChapters.filter((item) => this.checkIfANewChapter(item, currentMangaId));
+		const filterNewChapters = latestChapters.filter((item) => this.checkIfItIsANewChapter(item));
 
 		if (!filterNewChapters.length) {
 			this.removeMangaFromList();
@@ -111,6 +115,12 @@ export default class MangaService {
 
 	private removeMangaFromList = () => this.mangaList.shift();
 
+	private findMangaIdFromChapter = (chapter: types.IMangadexChapter): string | null => {
+		const manga = chapter.relationships.find((item) => item.type === "manga");
+
+		return manga?.id || null;
+	}
+
 	private createChapterMangaEmbed = (chapters: types.IMangadexChapter[], simplifiedManga: types.ISimplifiedManga) => {
 		this.discordService.createNewChapterMangaEmbed({
 			color: "14942328",
@@ -120,8 +130,9 @@ export default class MangaService {
 				width: 200,
 			},
 			title: simplifiedManga.title,
+			url: strings.services.manga.mangaUrl(simplifiedManga.id),
 			description: this.creatingChapterDecription(chapters),
-			timestamp: chapters[0].attributes.publishAt,	
+			timestamp: chapters[0].attributes.readableAt,
 		});
 	};
 
@@ -129,6 +140,72 @@ export default class MangaService {
 		this.updatedMangaList = this.updatedMangaList.filter((item) => item.id !== mangaId);
 
 		this.updatedMangaList.push({ id: mangaId, latestChapter });
+	}
+
+	private getFeedList = async (): Promise<types.IMangadexChapter[]> => {
+		const listId = process.env.MANGADEXLIST;
+
+		if (!listId) {
+			throw new Error("Mangadex list env has not been set up");
+		}
+		const response = await axios.get<types.IMangadexResponse<types.IMangadexChapter[]>>(`https://api.mangadex.org/list/${listId}/feed?limit=20&offset=0&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica&translatedLanguage[]=en&order[readableAt]=desc`)
+		
+		return response.data.data;
+	}
+
+	public verifyIfListGotNewMangas = async () => {
+	
+		const chaptersListFeed = await this.getFeedList();
+
+		const filterNewChapters = chaptersListFeed.filter((item) => this.checkIfItIsANewChapter(item));
+		
+		if (!filterNewChapters.length) {
+			throw new Error("List Ain't got new chapters");
+		}
+		
+		const mangaIds = this.findAllMangasOfChapters(filterNewChapters);
+
+		await this.createAllMangaEmbedsForNewChapters(filterNewChapters, mangaIds);
+	};
+
+	private promiseDelayer = async (seconds: number) => {
+
+		await new Promise((resp) => setTimeout(() => resp(null), seconds * 1000));
+	
+	};
+
+	private findAllMangasOfChapters = (chapters: types.IMangadexChapter[]): string[] => {
+
+		const allRelations = chapters.map((item) => item.relationships.filter(relation => relation.type === "manga")[0].id);
+
+		const UniqueIdsSet = new Set(allRelations);
+
+		return Array.from(UniqueIdsSet);
+	}
+
+	private createAllMangaEmbedsForNewChapters = async (newChapters: types.IMangadexChapter[], mangaIds: string[]) => {
+
+		await Promise.all(mangaIds.map(async (mangaId, index) => {
+
+			await this.promiseDelayer(5 * index);	
+
+			const chapters = this.findAllMangaChapters(newChapters, mangaId);
+
+			const manga = await this.getSimplifiedManga(mangaId);
+
+			this.addInUpdatedMangaList(mangaId, chapters[0].attributes.chapter);
+
+			this.createChapterMangaEmbed(chapters, manga);
+
+		}))
+	}
+
+	private findAllMangaChapters = (chapters: types.IMangadexChapter[], mangaId: string): types.IMangadexChapter[] => {
+
+		const getMangaRelation = (relationsShips: types.MangaRelationBase[]): types.MangaRelationBase => {
+			return relationsShips.filter((item) => item.type === "manga")[0];
+		} 
+		return chapters.filter((item) => getMangaRelation(item.relationships).id === mangaId);
 	}
 
 	public clearAll = () => {

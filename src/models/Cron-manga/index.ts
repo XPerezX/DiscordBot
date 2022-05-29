@@ -6,18 +6,18 @@ import { discordService } from "../../resources/globalData";
 const mangaService = new MangaService(discordService);
 console.log("Cron is working");
 
-const task = cron.schedule("*/30 * * * *", async () => {
-	try {
-		if (!mangaService.mangaList.length) {
-			const list = await mangaService.getList();
-			console.log("list fetch: ", list);
-		}
-		await mangaService.handleMangaFetch();
+console.log("starting cron");
 
-		await discordService.sendEmbends();
+const task = cron.schedule("*/25 * * * *", async () => {
+	try {
+		
+		await mangaService.verifyIfListGotNewMangas();
+
 		console.log("it has fetched cron job: ", discordService.embeds);
-	} catch (error) {
-		console.log(strings.errors.console.cronError, error);
+		await discordService.sendEmbends();
+	} catch (e) {
+		const error = e as Error;
+		console.log(strings.errors.console.cronError, error.message);
 	}
 });
 
