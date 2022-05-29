@@ -40,8 +40,5 @@
     "discord-api-types": "^0.23.1",
     "ts-node-dev": "^1.1.8",
     "typescript": "^4.4.3"
-  },
-  "engines": {
-    "node": "16.7.0"
   }
 }
